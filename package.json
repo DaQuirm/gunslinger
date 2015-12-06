@@ -1,0 +1,15 @@
+{
+  "name": "gunslinger",
+  "version": "1.0.0",
+  "description": "Testing bot for CSS Quickdraw",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "LGPL-3.0",
+  "dependencies": {
+    "co": "^4.6.0",
+    "nightmare": "https://github.com/segmentio/nightmare.git"
+  }
+}
