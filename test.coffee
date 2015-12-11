@@ -1,5 +1,10 @@
+mongoose = require 'mongoose'
+CSON     = require 'cson'
+
 Gunslinger = require './gunslinger'
-Scenario = require './scenario'
+Scenario   = require './scenario'
+
+puzzles = CSON.load './fixtures/puzzles.cson'
 
 incorrect_selectors = [
 	'd'
@@ -12,35 +17,54 @@ correct_selector = '.match'
 
 scenario = new Scenario
 scenario
-	.spawn \
-		'gm',
-		'http://localhost:3000/game-master.html?id=563e67b5e3177999a8406ac4',
-		'koa:sess=eyJwYXNzcG9ydCI6IHsgInVzZXIiOiAiZ2l0aHViNjY5Nzg0IiB9IH0='
+
+	.db_cleanup 'users', 'gamesessions', 'puzzles'
+
+	.db_account 'fake-game-master'
+	.db_account 'fake-player'
+
+	.db_puzzles puzzles
+
+	.db_game_session 'test-game', 'fake-game-master'
+
+	.service '../css-quickdraw-redux'
 
 	.spawn \
-		'player',
-		'http://localhost:3000/game.html?id=563e67b5e3177999a8406ac4',
-		'koa:sess=eyJwYXNzcG9ydCI6IHsgInVzZXIiOiAiZmFjZWJvb2s1MDI5MzYwNzMyNDYzMDYiIH0gfQ=='
+		'fake-game-master',
+		'game-master',
+		'test-game'
 
-	.as 'gm'
+	.spawn \
+		'fake-player',
+		'game',
+		'test-game'
+
+	.as 'fake-game-master'
 	.wait_cell 'round_phase', 'wait_screen'
 	.send 'current_puzzle_index', 1
 
-	.as 'player'
+	.as 'fake-player'
 	.wait_cell 'round_phase', 'in_progress'
-	.wait_random [1000, 3000]
+	.wait_random [100, 300]
 	.repeat 10, -> [
 		@wait_random [100, 500]
 		@send_any 'selector', incorrect_selectors
 	]
-	.wait_random [500, 1000]
+	.wait_random [500, 750]
 	.send 'selector', correct_selector
 
-	.end 'player'
-	.end 'gm'
+	.end 'fake-player'
+	.end 'fake-game-master'
 
-Gunslinger.run scenario, ->
-	console.log 'wooo'
+	.kill_service()
+
+	.db_cleanup 'users', 'gamesessions', 'puzzles'
+
+{connection} = mongoose.connect 'mongodb://localhost/cssqd-test'
+connection.once 'open', ->
+	Gunslinger.run scenario, ->
+		console.log 'all done!'
+		do process.exit
 
 	# .nightmare, ->
 	# .refresh

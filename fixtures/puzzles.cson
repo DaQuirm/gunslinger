@@ -1,0 +1,296 @@
+[
+
+	{
+		html:
+			'''
+			<header>header</header>
+			<main>
+				<article>cellar door</div>
+			</main>
+			<footer>footer</footer>
+			'''
+
+		selector: 'article'
+		name: 'Matching Game II'
+		banned: []
+	}
+
+	{
+		html:
+			'''
+			<p id="2c56 360580420d293172f42d85dfbed"></p>
+			<p id="f0e5 0c025f275d87cb14518a03cd19d"></p>
+			<p id="37ee 3e859e9efe5d7c9ff005649bd6d"></p>
+			<p id="e3cc 2c14a5e6dd1a7d94b6ff634d7fc"></p>
+			'''
+
+		selector: '[id*=d6d]'
+		name: 'Shortcut'
+		banned: [':', '^', '"', '\'']
+	}
+
+	{
+		html:
+			'''
+			<main>
+				<input type="text">
+				<input type="number">
+				<input type="checkbox" checked>
+				<input type="checkbox">
+				<input type="text">
+			</main>
+			'''
+
+		selector: ':checked'
+		name: 'Signing up'
+		banned: ['n', '[']
+	}
+
+	{
+		html:
+			'''
+			<section>
+				<p class="duck"></p>
+				<span class="duck"></span>
+				<div class="goose"></div>
+				<aside class="swan"></aside>
+				<p class="chicken"></p>
+				<span class="peacock"></span>
+				<div class="turkey"></div>
+			</section>
+			'''
+
+		selector: 'section :only-of-type'
+		name: 'Ugly duckling'
+		banned: ['a', '=']
+	}
+
+	{
+		html:
+			'''
+			<div class="firstborn"></div>
+			<div id="second-son"></div>
+			<span></span>
+			<div></div>
+			<span></span>
+			'''
+
+		selector: ':not(:first-child)'
+		name: 'Envious heirs'
+		banned: [',']
+	}
+
+	{
+		html:
+			'''
+			<article data-title="Human Rights" lang="en">
+				<p></p>
+			</article>
+			<article data-title="Droits de l'homme" lang="fr">
+				<p></p>
+			</article>
+			<article data-title="Menschenrechte" lang="de">
+				<p></p>
+			</article>
+			'''
+
+		selector: 'p:lang(fr)'
+		name: 'Je t\'aime, CSS <3'
+		banned: ['=']
+	}
+
+	{
+		html:
+			'''
+				<div></div>
+				<div class="even"></div>
+				<div></div>
+				<div class="even"></div>
+				<div></div>
+				<div class="even"></div>
+				<div></div>
+				<div class="even"></div>
+				<div></div>
+				<div class="even"></div>
+			'''
+
+		selector: '.even ~ .even'
+		name: 'Getting even'
+		banned: [':']
+	}
+
+	{
+		html:
+			'''
+			<ul>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+			</ul>
+			'''
+
+		selector: ':nth-child(-2n+4)'
+		name: 'A good start'
+		banned: []
+	}
+
+	{
+		html:
+			'''
+				<div>
+					<div></div>
+					<div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div>
+						<div></div>
+					</div>
+				</div>
+				<div>
+					<div>
+						<div></div>
+						<div></div>
+					</div>
+					<div></div>
+				</div>
+			'''
+
+		selector: 'div:only-child'
+		name: 'Loner'
+		banned: ['t']
+	}
+
+
+	{
+		html:
+			'''
+				<div data-attr="c s s"></div>
+				<span data-attr="j s"></span>
+				<div data-attr="x m l"></div>
+				<div data-attr="soap"></div>
+				<div data-attr="j s o n"></div>
+			'''
+
+		selector: '[data-attr~=s]'
+		name: 'Cosmopolitan'
+		banned: [':', '+', ',']
+	}
+
+	{
+		html:
+			'''
+			<header>header</header>
+			<main>
+				<div class="match">cellar door</div>
+			</main>
+			<footer>footer</footer>
+			'''
+
+		selector: '.match'
+		name: 'Matching Game'
+		banned: []
+	}
+
+	{
+		html:
+			'''
+				<span id="me"></span>
+				<div id="not-me"></div>
+				<div id="me"></div>
+				<span id="not-me-either"></div>
+			'''
+
+		selector: 'div#me'
+		name: 'Bits and pieces'
+		banned: [':', '~', '+']
+	}
+
+	{
+		html:
+			'''
+				<header>
+				<nav>
+					<menu></menu>
+				</nav>
+				<article></article>
+				<aside></aside>
+				<footer>
+			'''
+
+		selector: '*'
+		name: 'Split'
+		banned: [',']
+	}
+
+	{
+		html:
+			'''
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div data-anchor></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			'''
+
+		selector: '[data-anchor] + div'
+		name: 'Anchor'
+		banned: [':']
+	}
+
+	{
+		html:
+			'''
+			<div>
+				<div>
+					<div>
+						<div>
+							<div>
+								<div>
+									<div>
+										<div>
+											<div></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			'''
+
+		selector: ':empty'
+		name: 'Mariana'
+		banned: []
+	}
+
+	{
+		html:
+			'''
+			<div class="glass door"></div>
+			<div class="cellar">
+				<div class="door">
+					<div class="behind cellar door"></div>
+					<span class="jar of pickles"></span>
+				</div>
+			</div>
+			<div class="door cellar"></div>
+			<div class>="little cellar"</div>
+			'''
+
+		selector: '.cellar.door'
+		name: 'Classy'
+		banned: []
+	}
+]

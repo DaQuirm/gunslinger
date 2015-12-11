@@ -1,5 +1,5 @@
 {
-  "name": "gunslinger",
+  "name": "cssqd-gunslinger",
   "version": "1.0.0",
   "description": "Testing bot for CSS Quickdraw",
   "main": "index.js",
@@ -10,6 +10,9 @@
   "license": "LGPL-3.0",
   "dependencies": {
     "co": "^4.6.0",
+    "colors": "^1.1.2",
+    "cson": "^3.0.2",
+    "mongoose": "^4.2.10",
     "nightmare": "https://github.com/segmentio/nightmare.git"
   }
 }
