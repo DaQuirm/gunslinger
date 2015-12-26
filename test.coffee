@@ -64,9 +64,10 @@ scenario
 
 {connection} = mongoose.connect 'mongodb://localhost/cssqd-test'
 connection.once 'open', ->
-	Gunslinger.run scenario, ->
-		console.log 'all done!'
-		do process.exit
+	Gunslinger.run scenario
+		.then ->
+			console.log 'all done!'
+			do process.exit
 
 	# .nightmare, ->
 	# .refresh

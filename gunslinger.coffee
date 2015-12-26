@@ -17,74 +17,74 @@ Gunslinger =
 	fake_accounts: {}
 	game_sessions: {}
 
-	run: (scenario, done) ->
-		commands = scenario.queue or scenario
-		next = (index) =>
-			if index < commands.length
-				item = commands[index++]
-				console.log "#{JSON.stringify item}"
-				@[item.command] item, -> next index
-			else
-				do done
-		next 0
+	run: (scenario) ->
+		new Promise (resolve) =>
+			commands = scenario.queue or scenario
+			next = (index) =>
+				if index < commands.length
+					item = commands[index++]
+					console.log "#{JSON.stringify item}"
+					co(=>
+						@[item.command] item
+					).catch (err) -> console.log err
+					 .then ->
+						 next index
+				else
+					do resolve
+			next 0
 
-	spawn: ({user_id, app, game_session_id}, done) ->
-		co(=>
-			nightmare = do Nightmare
-			@nightmares[user_id] = nightmare
+	spawn: ({user_id, app, game_session_id}) ->
+		nightmare = do Nightmare
+		@nightmares[user_id] = nightmare
 
-			session_data =
-				passport:
-					user: @fake_accounts[user_id].id
+		session_data =
+			passport:
+				user: @fake_accounts[user_id].id
 
-			cookie = new Buffer(JSON.stringify session_data).toString 'base64'
+		cookie = new Buffer(JSON.stringify session_data).toString 'base64'
 
-			game_session_oid = do @game_sessions[game_session_id].toString
-			base_url = 'http://localhost:3000'
-			app_url = "#{base_url}/#{app}.html?id=#{game_session_oid}"
+		game_session_oid = do @game_sessions[game_session_id].toString
+		base_url = 'http://localhost:3000'
+		app_url = "#{base_url}/#{app}.html?id=#{game_session_oid}"
 
-			console.log 'spawn: setting auth cookie to deceive Warp'
-			yield nightmare.goto base_url
-			yield nightmare.evaluate \
-				((cookie) ->
-					document.cookie = "koa:sess=#{cookie}"),
-				cookie
+		console.log 'spawn: setting auth cookie to deceive Warp'
+		yield nightmare.goto base_url
+		yield nightmare.evaluate \
+			((cookie) ->
+				document.cookie = "koa:sess=#{cookie}"),
+			cookie
 
-			console.log "spawn: opening #{app_url}"
-			yield nightmare.goto app_url
-		).then done
+		console.log "spawn: opening #{app_url}"
+		yield nightmare.goto app_url
 
-	as: ({user_id}, done) ->
+	as: ({user_id}) ->
 		@current_nightmare = @nightmares[user_id]
-		do done
 
-	wait_cell: ({cell, value}, done) ->
-		co(=>
-			nightmare = @current_nightmare
-			yield nightmare.wait \
-				((cell, value) -> window.app[cell].value is value),
-				cell, value
-		).catch (err) -> console.log err
-		 .then done
+	wait_cell: ({cell, value}) ->
+		nightmare = @current_nightmare
+		yield nightmare.wait \
+			((cell, value) -> window.app[cell].value is value),
+			cell, value
 
-	wait_random: ({from, to}, done) ->
+	wait_random: ({from, to}) ->
 		ms = Math.random() * (to - from) + from
-		setTimeout done, ms
+		yield new Promise (resolve) =>
+			setTimeout (->
+				do resolve
+			), ms
 
-	send: ({cell, value}, done) ->
-		co(=>
-			nightmare = @current_nightmare
-			yield nightmare.evaluate \
-				((cell, value) -> window.app[cell].value = value),
-				cell, value
-		).then done
+	send: ({cell, value}) ->
+		nightmare = @current_nightmare
+		yield nightmare.evaluate \
+			((cell, value) -> window.app[cell].value = value),
+			cell, value
 
-	send_any: ({cell, values}, done) ->
+	send_any: ({cell, values}) ->
 		random_index = Math.floor(Math.random() * values.length)
 		value = values[random_index]
-		@send {cell, value}, done
+		@send {cell, value}
 
-	repeat: ({times, callback}, done) ->
+	repeat: ({times, callback}) ->
 		commands = Array.apply(null, new Array times)
 			.map ->
 				scenario = new Scenario
@@ -92,71 +92,60 @@ Gunslinger =
 				scenario.queue
 			.reduce (acc, item) ->
 				acc.concat item
-		@run commands, done
+		yield @run commands
 
-	end: ({id}, done) ->
+	end: ({id}) ->
 		nightmare = @nightmares[id]
-		co(=>
-				yield do nightmare.end
-		).then done
+		yield do nightmare.end
 
-	db_cleanup: ({collections}, done) ->
+	db_cleanup: ({collections}) ->
 		Collection =
 			'users': User
 			'puzzles': Puzzle
 			'gamesessions': GameSession
 
-		co(->
-			for name in collections
-				yield Collection[name].remove {}
-		)
-			.catch (err) -> console.log err
-			.then done
+		for name in collections
+			yield Collection[name].remove {}
 
-	db_account: ({user_id}, done) ->
+	db_account: ({user_id}) ->
 		profile =
 			id: user_id
 			username: user_id
 			provider: 'gunslinger'
 
-		User.fromOAuthProfile profile
+		yield User.fromOAuthProfile profile
 			.then (user) =>
 				@fake_accounts[user_id] = user
-				do done
 
-	db_puzzles: ({puzzles}, done) ->
-		Puzzle.create puzzles
-			.then done
+	db_puzzles: ({puzzles}) ->
+		yield Puzzle.create puzzles
 
-	db_game_session: ({id, game_master_id}, done) ->
-		co(=>
-			puzzles = yield Puzzle.find {}
-			yield GameSession.create
-				puzzles: puzzles
-				game_master_id: @fake_accounts[game_master_id]._id
-		).then (game_session) =>
-			@game_sessions[id] = game_session._id
-			do done
+	db_game_session: ({id, game_master_id}) ->
+		puzzles = yield Puzzle.find {}
+		game_session = yield GameSession.create
+			puzzles: puzzles
+			game_master_id: @fake_accounts[game_master_id]._id
+		@game_sessions[id] = game_session._id
 
-	service: ({dir}, done) ->
-		cwd = path.join __dirname, dir
-		console.log "starting cssqd service from #{cwd}"
+	service: ({dir}) ->
+		yield new Promise (resolve) =>
+			cwd = path.join __dirname, dir
+			console.log "starting cssqd service from #{cwd}"
 
-		@service_process = spawn 'npm', ['run', 'dev-test'], cwd: cwd
+			@service_process = spawn 'npm', ['run', 'dev-test'], cwd: cwd
 
-		@service_process.stdout.on 'data', (data) ->
-			process.stdout.write "[#{'cssqd-service'.cyan}]#{data}"
-			if data.toString() is 'cssqd-service:ready\n' # IPC anyone?
-				do done
+			@service_process.stdout.on 'data', (data) ->
+				process.stdout.write "[#{'cssqd-service'.cyan}]#{data}"
+				if data.toString() is 'cssqd-service:ready\n' # IPC anyone?
+					do resolve
 
-		@service_process.stderr.on 'data', (data) =>
-			process.stdout.write "[#{'cssqd-service'.red}]#{data}"
+			@service_process.stderr.on 'data', (data) =>
+				process.stdout.write "[#{'cssqd-service'.red}]#{data}"
 
-		@service_process.on 'exit', (code) ->
-			process.stdout.write "[#{'cssqd-service'.cyan}] service process exited with code #{code}"
+			@service_process.on 'exit', (code) ->
+				process.stdout.write "[#{'cssqd-service'.cyan}] service process exited with code #{code}"
 
-	kill_service: (_, done) ->
+	kill_service: ->
 		do @service_process.kill
-		do done
 
 module.exports = Gunslinger
