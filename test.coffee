@@ -5,6 +5,7 @@ Gunslinger = require './gunslinger'
 Scenario   = require './scenario'
 
 puzzles = CSON.load './fixtures/puzzles.cson'
+GameSessionCommand = require './models/game-session-command'
 
 incorrect_selectors = [
 	'd'
@@ -41,7 +42,8 @@ scenario
 
 	.as 'fake-game-master'
 	.wait_cell 'round_phase', 'wait_screen'
-	.send 'current_puzzle_index', 1
+	.send 'command',
+		new GameSessionCommand GameSessionCommand.START_ROUND, puzzle_index: 1
 
 	.as 'fake-player'
 	.wait_cell 'round_phase', 'in_progress'
@@ -68,6 +70,3 @@ connection.once 'open', ->
 
 	# .nightmare, ->
 	# .refresh
-
-
-
