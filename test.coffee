@@ -7,6 +7,10 @@ Scenario   = require './scenario'
 puzzles = CSON.load './fixtures/puzzles.cson'
 GameSessionCommand = require './models/game-session-command'
 
+require 'mocha'
+chai = require 'chai'
+do chai.should
+
 incorrect_selectors = [
 	'd'
 	'*'
@@ -17,8 +21,8 @@ incorrect_selectors = [
 correct_selector = '.match'
 
 scenario = new Scenario
-scenario
 
+scenario
 	.db_cleanup 'users', 'gamesessions', 'puzzles'
 
 	.db_account 'fake-game-master'
@@ -49,8 +53,10 @@ scenario
 	.wait_cell 'round_phase', 'in_progress'
 	.wait_random [100, 300]
 	.repeat 10, -> [
-		@wait_random [100, 500]
 		@send_any 'selector', incorrect_selectors
+		@wait_random [100, 500]
+		@check_cells 'match', ({ result }) ->
+			result.should.equal 'negative'
 	]
 	.wait_random [500, 750]
 	.send 'selector', correct_selector
@@ -62,12 +68,16 @@ scenario
 
 	.db_cleanup 'users', 'gamesessions', 'puzzles'
 
-{connection} = mongoose.connect 'mongodb://localhost/cssqd-test'
-connection.once 'open', ->
-	Gunslinger.run scenario
-		.then ->
-			console.log 'all done!'
-			do process.exit
+describe 'e', ->
+	it 'q', (done) ->
+		@timeout 30000
+		{connection} = mongoose.connect 'mongodb://localhost/cssqd-test'
+		connection.once 'open', ->
+			Gunslinger.run scenario
+				.then ->
+					console.log 'all done!'
+					do process.exit
+					do done
 
 	# .nightmare, ->
 	# .refresh

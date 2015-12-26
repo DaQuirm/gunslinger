@@ -3,85 +3,54 @@ class Scenario
 	constructor: ->
 		@queue = []
 
-	method: (command) ->
-		@queue.push command
+	method: (command, data) ->
+		data.command = command
+		@queue.push data
 		@
 
 	spawn: (user_id, app, game_session_id) ->
-		@method
-			command: 'spawn'
-			user_id: user_id
-			app: app
-			game_session_id: game_session_id
+		@method 'spawn', { user_id, app, game_session_id }
 
 	as: (user_id) ->
-		@method
-			command: 'as'
-			user_id: user_id
+		@method 'as', { user_id }
 
 	wait_cell: (cell, value) ->
-		@method
-			command: 'wait_cell'
-			cell: cell
-			value: value
+		@method 'wait_cell', { cell, value }
 
 	wait_random: ([from, to]) ->
-		@method
-			command: 'wait_random'
-			from: from
-			to: to
+		@method 'wait_random', { from, to }
 
 	repeat: (times, callback) ->
-		@method
-			command: 'repeat'
-			times: times
-			callback: callback
+		@method 'repeat', { times, callback }
 
 	send: (cell, value) ->
-		@method
-			command: 'send'
-			cell: cell
-			value: value
+		@method 'send', { cell, value }
 
 	send_any: (cell, values) ->
-		@method
-			command: 'send_any'
-			cell: cell
-			values: values
+		@method 'send_any', { cell, values }
 
 	end: (id) ->
-		@method
-			command: 'end'
-			id: id
+		@method 'end', { id }
 
 	db_cleanup: (collections...) ->
-		@method
-			command: 'db_cleanup'
-			collections: collections
+		@method 'db_cleanup', { collections }
 
 	db_account: (user_id) ->
-		@method
-			command: 'db_account'
-			user_id: user_id
+		@method 'db_account', { user_id }
 
 	db_puzzles: (puzzles) ->
-		@method
-			command: 'db_puzzles'
-			puzzles: puzzles
+		@method 'db_puzzles', { puzzles }
 
 	db_game_session: (id, game_master_id) ->
-		@method
-			command: 'db_game_session'
-			id: id
-			game_master_id: game_master_id
+		@method 'db_game_session', { id,  game_master_id }
 
 	service: (dir) ->
-		@method
-			command: 'service'
-			dir: dir
+		@method 'service', { dir }
 
 	kill_service: ->
-		@method
-			command: 'kill_service'
+		@method 'kill_service', {}
+
+	check_cells: (cell, assert) ->
+		@method 'check_cells', { cell, assert }
 
 module.exports = Scenario

@@ -148,4 +148,8 @@ Gunslinger =
 	kill_service: ->
 		do @service_process.kill
 
+	check_cells: ({cell, assert})->
+		nightmare = @current_nightmare
+		assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
+
 module.exports = Gunslinger
