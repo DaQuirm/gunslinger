@@ -9,11 +9,9 @@
   "author": "",
   "license": "LGPL-3.0",
   "dependencies": {
-    "chai": "^3.4.1",
     "co": "^4.6.0",
     "colors": "^1.1.2",
     "cson": "^3.0.2",
-    "mocha": "^2.3.4",
     "mongoose": "^4.2.10",
     "nightmare": "https://github.com/segmentio/nightmare.git"
   }

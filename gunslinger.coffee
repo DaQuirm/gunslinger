@@ -150,6 +150,7 @@ Gunslinger =
 
 	check_cells: ({cell, assert})->
 		nightmare = @current_nightmare
-		assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
+		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
+		if assertion then console.log 'passed 👍'.green else console.log 'failed 👎'.red
 
 module.exports = Gunslinger
