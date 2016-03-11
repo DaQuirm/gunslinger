@@ -44,8 +44,8 @@ class Scenario
 	db_game_session: (id, game_master_id) ->
 		@method 'db_game_session', { id,  game_master_id }
 
-	service: (dir) ->
-		@method 'service', { dir }
+	service: ->
+		@method 'service', {}
 
 	kill_service: ->
 		@method 'kill_service', {}

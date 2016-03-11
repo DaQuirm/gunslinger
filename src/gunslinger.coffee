@@ -5,9 +5,9 @@ colors    = require 'colors'
 path      = require 'path'
 
 Scenario    = require './scenario'
-User        = require './models/user'
-GameSession = (require './models/game-session').GameSessionModel
-Puzzle      = (require './models/puzzle').PuzzleModel
+User        = require '../models/user'
+GameSession = (require '../models/game-session').GameSessionModel
+Puzzle      = (require '../models/puzzle').PuzzleModel
 
 Gunslinger =
 
@@ -16,6 +16,10 @@ Gunslinger =
 
 	fake_accounts: {}
 	game_sessions: {}
+
+	configuration: {}
+
+	configure: (@configuration) ->
 
 	run: (scenario) ->
 		new Promise (resolve) =>
@@ -127,9 +131,9 @@ Gunslinger =
 			game_master_id: @fake_accounts[game_master_id]._id
 		@game_sessions[id] = game_session._id
 
-	service: ({dir}) ->
+	service: ->
 		yield new Promise (resolve) =>
-			cwd = path.join __dirname, dir
+			cwd = @configuration.service_path
 			console.log "starting cssqd service from #{cwd}"
 
 			@service_process = spawn 'npm', ['run', 'dev-test'], cwd: cwd
@@ -151,6 +155,6 @@ Gunslinger =
 	check_cells: ({cell, assert})->
 		nightmare = @current_nightmare
 		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
-		if assertion then console.log 'passed 👍'.green else console.log 'failed 👎'.red
+		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
 
 module.exports = Gunslinger
