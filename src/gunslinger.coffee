@@ -12,7 +12,6 @@ Puzzle      = (require '../models/puzzle').PuzzleModel
 Gunslinger =
 
 	nightmares: {}
-	current_nightmare: null
 
 	fake_accounts: {}
 	game_sessions: {}
@@ -21,21 +20,41 @@ Gunslinger =
 
 	configure: (@configuration) ->
 
+	stringify: (item) ->
+		string = ''
+		if item.user_id?
+			string += "[#{item.user_id.cyan}] "
+		string += "#{item.command.white}"
+		for key, value of item
+			if key isnt 'command'
+				string += " #{key}:".yellow + "#{value}"
+		string
+
 	run: (scenario) ->
 		new Promise (resolve) =>
 			commands = scenario.queue or scenario
 			next = (index) =>
 				if index < commands.length
 					item = commands[index++]
-					console.log "#{JSON.stringify item}"
+					console.log @stringify item
+
 					co(=>
-						@[item.command] item
-					).catch (err) -> console.log err
-					 .then ->
-						 next index
+						@[item.command] item, item.user_id
+					)
+						.catch (err) -> console.log err
+					 	.then        -> next index
 				else
 					do resolve
 			next 0
+
+	run_async: (scenario) ->
+		co(=>
+			yield scenario.queue.map (item) =>
+				console.log @stringify item
+				co(=> @[item.command] item, item.user_id)
+					.catch (err) -> console.log err
+		)
+		.catch (err) -> console.log err
 
 	spawn: ({user_id, app, game_session_id}) ->
 		nightmare = do Nightmare
@@ -61,11 +80,22 @@ Gunslinger =
 		console.log "spawn: opening #{app_url}"
 		yield nightmare.goto app_url
 
-	as: ({user_id}) ->
-		@current_nightmare = @nightmares[user_id]
+	as: ({user_id, callback}) ->
+		scenario = new Scenario
+		callback.call scenario
+		for item in scenario.queue
+			item.user_id = user_id
+		yield @run scenario
 
-	wait_cell: ({cell, value}) ->
-		nightmare = @current_nightmare
+	async: ({user_id, callback}) ->
+		scenario = new Scenario
+		callback.call scenario
+		for item in scenario.queue
+			item.user_id = user_id
+		yield @run_async scenario
+
+	wait_cell: ({cell, value}, user_id) ->
+		nightmare = @nightmares[user_id]
 		yield nightmare.wait \
 			((cell, value) -> window.app[cell].value is value),
 			cell, value
@@ -77,26 +107,16 @@ Gunslinger =
 				do resolve
 			), ms
 
-	send: ({cell, value}) ->
-		nightmare = @current_nightmare
+	send: ({cell, value}, user_id) ->
+		nightmare = @nightmares[user_id]
 		yield nightmare.evaluate \
 			((cell, value) -> window.app[cell].value = value),
 			cell, value
 
-	send_any: ({cell, values}) ->
+	send_any: ({cell, values}, user_id) ->
 		random_index = Math.floor(Math.random() * values.length)
 		value = values[random_index]
-		@send {cell, value}
-
-	repeat: ({times, callback}) ->
-		commands = Array.apply(null, new Array times)
-			.map ->
-				scenario = new Scenario
-				callback.call scenario
-				scenario.queue
-			.reduce (acc, item) ->
-				acc.concat item
-		yield @run commands
+		@send {cell, value}, user_id
 
 	end: ({id}) ->
 		nightmare = @nightmares[id]
@@ -139,7 +159,7 @@ Gunslinger =
 			@service_process = spawn 'npm', ['run', 'dev-test'], cwd: cwd
 
 			@service_process.stdout.on 'data', (data) ->
-				process.stdout.write "[#{'cssqd-service'.cyan}]#{data}"
+				process.stdout.write "[#{'cssqd-service'.magenta}]#{data}"
 				if data.toString() is 'cssqd-service:ready\n' # IPC anyone?
 					do resolve
 
@@ -147,13 +167,13 @@ Gunslinger =
 				process.stdout.write "[#{'cssqd-service'.red}]#{data}"
 
 			@service_process.on 'exit', (code) ->
-				process.stdout.write "[#{'cssqd-service'.cyan}] service process exited with code #{code}"
+				process.stdout.write "[#{'cssqd-service'.magenta}] service process exited with code #{code}"
 
 	kill_service: ->
 		do @service_process.kill
 
-	check_cells: ({cell, assert})->
-		nightmare = @current_nightmare
+	check_cells: ({cell, assert}, user_id)->
+		nightmare = @nightmares[user_id]
 		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
 		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
 

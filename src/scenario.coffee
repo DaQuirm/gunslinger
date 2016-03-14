@@ -11,8 +11,11 @@ class Scenario
 	spawn: (user_id, app, game_session_id) ->
 		@method 'spawn', { user_id, app, game_session_id }
 
-	as: (user_id) ->
-		@method 'as', { user_id }
+	as: (user_id, callback) ->
+		@method 'as', { user_id, callback }
+
+	async: (user_id, callback) ->
+		@method 'async', { user_id, callback }
 
 	wait_cell: (cell, value) ->
 		@method 'wait_cell', { cell, value }
@@ -21,7 +24,9 @@ class Scenario
 		@method 'wait_random', { from, to }
 
 	repeat: (times, callback) ->
-		@method 'repeat', { times, callback }
+		for index in [0...times]
+			callback.call @, index
+		@
 
 	send: (cell, value) ->
 		@method 'send', { cell, value }
