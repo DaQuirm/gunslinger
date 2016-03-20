@@ -14,8 +14,8 @@ class Scenario
 	as: (user_id, callback) ->
 		@method 'as', { user_id, callback }
 
-	async: (user_id, callback) ->
-		@method 'async', { user_id, callback }
+	async: (callback) ->
+		@method 'async', { callback }
 
 	wait_cell: (cell, value) ->
 		@method 'wait_cell', { cell, value }

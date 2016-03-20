@@ -50,8 +50,11 @@ Gunslinger =
 	run_async: (scenario) ->
 		co(=>
 			yield scenario.queue.map (item) =>
-				console.log @stringify item
-				co(=> @[item.command] item, item.user_id)
+				co(=>
+					console.log "#{@stringify item} start"
+					@[item.command] item, item.user_id
+				)
+					.then => console.log "#{@stringify item} done"
 					.catch (err) -> console.log err
 		)
 		.catch (err) -> console.log err
@@ -90,8 +93,6 @@ Gunslinger =
 	async: ({user_id, callback}) ->
 		scenario = new Scenario
 		callback.call scenario
-		for item in scenario.queue
-			item.user_id = user_id
 		yield @run_async scenario
 
 	wait_cell: ({cell, value}, user_id) ->

@@ -15,7 +15,7 @@ puzzles = CSON.load "#{__dirname}/../fixtures/puzzles.cson"
 
 scenario = new Scenario
 
-number_of_players = 10
+number_of_players = 3
 
 scenario
 	.db_cleanup 'users', 'gamesessions', 'puzzles'
@@ -47,18 +47,19 @@ scenario
 		@send 'command',
 			new GameSessionCommand GameSessionCommand.START_ROUND, puzzle_index: 1
 
-	.repeat number_of_players, (index) ->
-		@async "fake-player##{index}", ->
-			@wait_cell 'round_phase', 'in_progress'
-			@wait_random [100, 300]
-			@repeat 10, -> [
-				@send_any 'selector', incorrect_selectors
+	.async ->
+		@repeat number_of_players, (index) ->
+			@as "fake-player##{index}", ->
+				@wait_cell 'round_phase', 'in_progress'
+				@wait_random [100, 150]
+				@repeat 10, -> [
+					@send_any 'selector', incorrect_selectors
+					@wait_random [100, 200]
+					@check_cells 'match', ({ result }) ->
+						result is 'negative'
+				]
 				@wait_random [100, 500]
-				@check_cells 'match', ({ result }) ->
-					result is 'negative'
-			]
-			@wait_random [500, 750]
-			@send 'selector', correct_selector
+				@send 'selector', correct_selector
 
 	.repeat number_of_players, (index) ->
 		@end "fake-player##{index}"
