@@ -74,11 +74,10 @@ Gunslinger =
 		app_url = "#{base_url}/#{app}.html?id=#{game_session_oid}"
 
 		console.log 'spawn: setting auth cookie to deceive Warp'
-		yield nightmare.goto base_url
-		yield nightmare.evaluate \
-			((cookie) ->
-				document.cookie = "koa:sess=#{cookie}"),
-			cookie
+		yield nightmare.cookies.set
+			name: 'koa:sess'
+			value: cookie
+			url:   base_url
 
 		console.log "spawn: opening #{app_url}"
 		yield nightmare.goto app_url
