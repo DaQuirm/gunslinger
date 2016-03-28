@@ -33,14 +33,13 @@ scenario
 
 	.spawn \
 		'fake-game-master',
-		'game-master',
 		'test-game'
 
 	.repeat number_of_players, (index) ->
 		@spawn \
 			"fake-player##{index}",
-			'game',
-			'test-game'
+			'test-game',
+			yes
 
 	.as 'fake-game-master', ->
 		@wait_cell 'round_phase', 'wait_screen'

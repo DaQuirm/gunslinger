@@ -8,8 +8,8 @@ class Scenario
 		@queue.push data
 		@
 
-	spawn: (user_id, app, game_session_id) ->
-		@method 'spawn', { user_id, app, game_session_id }
+	spawn: (user_id, game_session_id, is_player) ->
+		@method 'spawn', { user_id, game_session_id, is_player }
 
 	as: (user_id, callback) ->
 		@method 'as', { user_id, callback }
