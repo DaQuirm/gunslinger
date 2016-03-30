@@ -20,8 +20,8 @@ class Scenario
 	wait_cell: (cell, value) ->
 		@method 'wait_cell', { cell, value }
 
-	wait_random: ([from, to]) ->
-		@method 'wait_random', { from, to }
+	wait: (interval) ->
+		@method 'wait', { interval }
 
 	repeat: (times, callback) ->
 		for index in [0...times]
@@ -30,9 +30,6 @@ class Scenario
 
 	send: (cell, value) ->
 		@method 'send', { cell, value }
-
-	send_any: (cell, values) ->
-		@method 'send_any', { cell, values }
 
 	end: (id) ->
 		@method 'end', { id }

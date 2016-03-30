@@ -20,6 +20,13 @@ Gunslinger =
 
 	configure: (@configuration) ->
 
+	any_of: (array) ->
+		random_index = Math.floor(Math.random() * array.length)
+		array[random_index]
+
+	any_in_range: ([from, to]) ->
+		Math.random() * (to - from) + from
+
 	stringify: (item) ->
 		string = ''
 		if item.user_id?
@@ -100,23 +107,17 @@ Gunslinger =
 			((cell, value) -> window.app[cell].value is value),
 			cell, value
 
-	wait_random: ({from, to}) ->
-		ms = Math.random() * (to - from) + from
+	wait: (interval) ->
 		yield new Promise (resolve) =>
 			setTimeout (->
 				do resolve
-			), ms
+			), interval
 
 	send: ({cell, value}, user_id) ->
 		nightmare = @nightmares[user_id]
 		yield nightmare.evaluate \
 			((cell, value) -> window.app[cell].value = value),
 			cell, value
-
-	send_any: ({cell, values}, user_id) ->
-		random_index = Math.floor(Math.random() * values.length)
-		value = values[random_index]
-		@send {cell, value}, user_id
 
 	end: ({id}) ->
 		nightmare = @nightmares[id]

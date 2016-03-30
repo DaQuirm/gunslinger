@@ -1,5 +1,6 @@
 CSON     = require 'cson'
 Scenario = require '../src/scenario'
+Gunslinger = require '../src/gunslinger'
 
 GameSessionCommand = require '../models/game-session-command'
 
@@ -51,14 +52,14 @@ scenario
 		@repeat number_of_players, (index) ->
 			@as "fake-player##{index}", ->
 				@wait_cell 'round_phase', 'in_progress'
-				@wait_random [100, 150]
+				@wait Gunslinger.any_in_range [100, 150]
 				@repeat 10, -> [
-					@send_any 'selector', incorrect_selectors
-					@wait_random [100, 200]
+					@send 'selector', Gunslinger.any_of incorrect_selectors
+					@wait Gunslinger.any_in_range [100, 200]
 					@check_cells 'match', ({ result }) ->
 						result is 'negative'
 				]
-				@wait_random [100, 500]
+				@wait Gunslinger.any_in_range [100, 500]
 				@send 'selector', correct_selector
 
 	.repeat number_of_players, (index) ->
