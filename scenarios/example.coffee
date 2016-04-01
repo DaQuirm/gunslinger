@@ -23,7 +23,7 @@ scenario
 	.db_account 'fake-game-master'
 
 	.repeat number_of_players, (index) ->
-		@db_account "fake-player##{index}"
+		@db_account "fake-player-#{index}"
 
 	.db_puzzles puzzles
 
@@ -37,9 +37,8 @@ scenario
 
 	.repeat number_of_players, (index) ->
 		@spawn \
-			"fake-player##{index}",
-			'test-game',
-			yes
+			"fake-player-#{index}",
+			'test-game'
 
 	.as 'fake-game-master', ->
 		@wait_cell 'round_phase', 'wait_screen'
@@ -48,7 +47,7 @@ scenario
 
 	.async ->
 		@repeat number_of_players, (index) ->
-			@as "fake-player##{index}", ->
+			@as "fake-player-#{index}", ->
 				@wait_cell 'round_phase', 'in_progress'
 				@wait_random [100, 150]
 				@repeat 10, -> [
@@ -61,7 +60,7 @@ scenario
 				@send 'selector', correct_selector
 
 	.repeat number_of_players, (index) ->
-		@end "fake-player##{index}"
+		@end "fake-player-#{index}"
 
 	.end 'fake-game-master'
 
