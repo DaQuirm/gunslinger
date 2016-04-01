@@ -24,7 +24,7 @@ scenario
 	.db_account 'fake-game-master'
 
 	.repeat number_of_players, (index) ->
-		@db_account "fake-player##{index}"
+		@db_account "fake-player-#{index}"
 
 	.db_puzzles puzzles
 
@@ -34,13 +34,11 @@ scenario
 
 	.spawn \
 		'fake-game-master',
-		'game-master',
 		'test-game'
 
 	.repeat number_of_players, (index) ->
 		@spawn \
-			"fake-player##{index}",
-			'game',
+			"fake-player-#{index}",
 			'test-game'
 
 	.as 'fake-game-master', ->
@@ -50,7 +48,7 @@ scenario
 
 	.async ->
 		@repeat number_of_players, (index) ->
-			@as "fake-player##{index}", ->
+			@as "fake-player-#{index}", ->
 				@wait_cell 'round_phase', 'in_progress'
 				@wait Gunslinger.any_in_range [100, 150]
 				@repeat 10, -> [
@@ -63,7 +61,7 @@ scenario
 				@send 'selector', correct_selector
 
 	.repeat number_of_players, (index) ->
-		@end "fake-player##{index}"
+		@end "fake-player-#{index}"
 
 	.end 'fake-game-master'
 

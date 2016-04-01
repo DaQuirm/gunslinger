@@ -66,7 +66,7 @@ Gunslinger =
 		)
 		.catch (err) -> console.log err
 
-	spawn: ({user_id, app, game_session_id}) ->
+	spawn: ({user_id, game_session_id}) ->
 		nightmare = do Nightmare
 		@nightmares[user_id] = nightmare
 
@@ -78,7 +78,7 @@ Gunslinger =
 
 		game_session_oid = do @game_sessions[game_session_id].toString
 		base_url = 'http://localhost:3000'
-		app_url = "#{base_url}/#{app}.html?id=#{game_session_oid}"
+		app_url = "#{base_url}/game?id=#{game_session_oid}&user_id=gunslinger#{user_id}"
 
 		console.log 'spawn: setting auth cookie to deceive Warp'
 		yield nightmare.cookies.set
