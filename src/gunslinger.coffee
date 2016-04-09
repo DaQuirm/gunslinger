@@ -89,6 +89,9 @@ Gunslinger =
 		console.log "spawn: opening #{app_url}"
 		yield nightmare.goto app_url
 
+		console.log 'spawn: injecting WarpExchange'
+		yield nightmare.inject 'js', "#{__dirname}/exchange.js"
+
 	as: ({user_id, callback}) ->
 		scenario = new Scenario
 		callback.call scenario
@@ -173,9 +176,41 @@ Gunslinger =
 	kill_service: ->
 		do @service_process.kill
 
-	check_cells: ({cell, assert}, user_id)->
+	check_cells: ({cell, assert}, user_id) ->
 		nightmare = @nightmares[user_id]
 		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
 		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
+
+	exchange: ({send, assert}, user_id) ->
+		nightmare = @nightmares[user_id]
+
+		yield nightmare.evaluate \
+			((ids) -> window.WarpExchange.capture ids),
+			Object.keys assert
+
+		{cell, value} = send
+
+		time = do process.hrtime
+
+		yield @send send, user_id
+		yield nightmare.wait \
+			-> window.WarpExchange.done
+
+		time = process.hrtime time
+		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
+
+		received = yield nightmare.evaluate \
+			-> window.WarpExchange.received
+
+		for cell, assertion of assert
+			result = assertion received[cell]
+			if result
+				console.log "[#{user_id.cyan}] passed ✓".green
+			else
+				console.log "[#{user_id.cyan}] failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
+
+		yield nightmare.evaluate \
+			-> do window.WarpExchange.reset
+
 
 module.exports = Gunslinger

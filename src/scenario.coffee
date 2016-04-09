@@ -55,4 +55,7 @@ class Scenario
 	check_cells: (cell, assert) ->
 		@method 'check_cells', { cell, assert }
 
+	exchange: (data) ->
+		@method 'exchange', data
+
 module.exports = Scenario
