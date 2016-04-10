@@ -50,8 +50,9 @@ scenario
 		@repeat number_of_players, (index) ->
 			@as "fake-player-#{index}", ->
 				@wait_cell 'round_phase', 'in_progress'
-				@wait Gunslinger.any_in_range [100, 150]
 				@repeat 10, -> [
+					@wait Gunslinger.any_in_range [50, 75]
+					do @refresh
 					@exchange
 						send:
 							cell: 'selector'

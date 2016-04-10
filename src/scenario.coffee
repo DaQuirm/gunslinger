@@ -58,4 +58,7 @@ class Scenario
 	exchange: (data) ->
 		@method 'exchange', data
 
+	refresh: ->
+		@method 'refresh', {}
+
 module.exports = Scenario

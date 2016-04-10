@@ -212,5 +212,23 @@ Gunslinger =
 		yield nightmare.evaluate \
 			-> do window.WarpExchange.reset
 
+	refresh: (_, user_id) ->
+		nightmare = @nightmares[user_id]
+		yield do nightmare.refresh
+
+		session_data =
+			passport:
+				user: @fake_accounts[user_id].id
+
+		cookie = new Buffer(JSON.stringify session_data).toString 'base64'
+
+
+		base_url = 'http://localhost:3000'
+		yield nightmare.cookies.set
+			name: 'koa:sess'
+			value: cookie
+			url:   base_url
+
+		yield nightmare.inject 'js', "#{__dirname}/exchange.js"
 
 module.exports = Gunslinger
