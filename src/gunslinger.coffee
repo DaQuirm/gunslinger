@@ -155,6 +155,9 @@ Gunslinger =
 			game_master_id: @fake_accounts[game_master_id]._id
 		@game_sessions[id] = game_session._id
 
+	use_game_session: ({ id }) ->
+		@game_sessions[id] = id
+
 	service: ->
 		yield new Promise (resolve) =>
 			cwd = @configuration.service_path

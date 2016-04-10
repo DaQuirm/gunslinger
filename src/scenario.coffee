@@ -46,6 +46,9 @@ class Scenario
 	db_game_session: (id, game_master_id) ->
 		@method 'db_game_session', { id,  game_master_id }
 
+	use_game_session: (id) ->
+		@method 'use_game_session', { id }
+
 	service: ->
 		@method 'service', {}
 
