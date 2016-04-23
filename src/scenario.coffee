@@ -3,19 +3,19 @@ class Scenario
 	constructor: ->
 		@queue = []
 
-	method: (command, data) ->
-		data.command = command
-		@queue.push data
+	method: (name, data, silent) ->
+		command = { name, data, silent }
+		@queue.push command
 		@
 
 	spawn: (user_id, game_session_id) ->
 		@method 'spawn', { user_id, game_session_id }
 
 	as: (user_id, callback) ->
-		@method 'as', { user_id, callback }
+		@method 'as', { user_id, callback }, yes
 
 	async: (callback) ->
-		@method 'async', { callback }
+		@method 'async', { callback }, yes
 
 	wait_cell: (cell, value) ->
 		@method 'wait_cell', { cell, value }
@@ -41,7 +41,7 @@ class Scenario
 		@method 'db_account', { user_id }
 
 	db_puzzles: (puzzles) ->
-		@method 'db_puzzles', { puzzles }
+		@method 'db_puzzles', { puzzles }, yes
 
 	db_game_session: (id, game_master_id) ->
 		@method 'db_game_session', { id,  game_master_id }

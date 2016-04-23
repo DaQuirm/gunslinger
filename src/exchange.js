@@ -1,32 +1,50 @@
-var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var entities, entity, id, _fn,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 window.WarpExchange = {
-  received: {},
-  done: false,
+  capture_id: 0,
+  captures: {},
   capture: function(ids) {
-    var entities, entity, id, results;
-    entities = window.app.warp_client.entities;
-    results = [];
-    for (id in entities) {
-      entity = entities[id];
-      if (indexOf.call(ids, id) >= 0) {
-        results.push((function(_this) {
-          return function(id) {
-            return entity.link.onvalue.add((function(value) {
-              _this.received[id] = value;
-              entities[id].link.onvalue.remove('capture');
-              if (Object.keys(_this.received === ids.length)) {
-                return _this.done = true;
-              }
-            }), 'capture');
-          };
-        })(this)(id));
-      }
-    }
-    return results;
+    this.captures[this.capture_id] = {
+      ids: ids,
+      done: false,
+      values: {}
+    };
+    return this.capture_id++;
   },
-  reset: function() {
-    this.received = {};
-    return this.done = false;
+  release: function(cid) {
+    return delete this.captures[cid];
   }
 };
+
+entities = window.app.warp_client.entities;
+
+_fn = (function(_this) {
+  return function(id) {
+    return entity.link.onvalue.add(function(value) {
+      var capture, captures, _, _results;
+      captures = window.WarpExchange.captures;
+      _results = [];
+      for (_ in captures) {
+        capture = captures[_];
+        if (__indexOf.call(capture.ids, id) >= 0) {
+          if (capture.values[id] == null) {
+            capture.values[id] = value;
+            if (Object.keys(capture.values === capture.ids.length)) {
+              _results.push(capture.done = true);
+            } else {
+              _results.push(void 0);
+            }
+          } else {
+            _results.push(void 0);
+          }
+        }
+      }
+      return _results;
+    });
+  };
+})(this);
+for (id in entities) {
+  entity = entities[id];
+  _fn(id);
+}

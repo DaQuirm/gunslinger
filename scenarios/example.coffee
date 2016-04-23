@@ -3,6 +3,7 @@ Scenario = require '../src/scenario'
 Gunslinger = require '../src/gunslinger'
 
 GameSessionCommand = require '../models/game-session-command'
+RoundPhase = require '../models/round-phase'
 
 incorrect_selectors = [
 	'd'
@@ -37,37 +38,45 @@ scenario
 		'test-game'
 
 	.repeat number_of_players, (index) ->
-		@spawn \
-			"fake-player-#{index}",
-			'test-game'
+		@as 'fake-game-master', ->
+			@exchange
+				capture:
+					'fake-game-master':
+						players: ({ data: {items} }) -> items.length is 1
+						# check player id
+				action: ->
+					@spawn \
+						"fake-player-#{index}",
+						'test-game'
 
 	.as 'fake-game-master', ->
-		@wait_cell 'round_phase', 'wait_screen'
+		@wait_cell 'round_phase', RoundPhase.WAIT_SCREEN
+
 		@send 'command',
 			new GameSessionCommand GameSessionCommand.START_ROUND, puzzle_index: 0
 
 	.async ->
 		@repeat number_of_players, (index) ->
 			@as "fake-player-#{index}", ->
-				@wait_cell 'round_phase', 'in_progress'
+				@wait_cell 'round_phase', RoundPhase.IN_PROGRESS
 				@repeat 10, -> [
 					@wait Gunslinger.any_in_range [50, 75]
 					do @refresh
 					@exchange
-						send:
-							cell: 'selector'
-							value: Gunslinger.any_of incorrect_selectors
-						assert:
-							match: ({ result }) -> result is 'negative'
+						capture:
+							"fake-player-#{index}":
+								match: ({ result }) -> result is 'negative'
+						action: ->
+							@send 'selector', Gunslinger.any_of incorrect_selectors
 				]
 				@wait Gunslinger.any_in_range [100, 500]
 
 				@exchange
-					send:
-						cell: 'selector'
-						value: correct_selector
-					assert:
-						match: ({ result }) -> result is 'positive'
+					capture:
+						"fake-player-#{index}":
+							match: ({ result }) -> result is 'positive'
+					action: ->
+						@send 'selector', correct_selector
 
 	.repeat number_of_players, (index) ->
 		@end "fake-player-#{index}"

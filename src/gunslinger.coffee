@@ -27,14 +27,14 @@ Gunslinger =
 	any_in_range: ([from, to]) ->
 		Math.random() * (to - from) + from
 
-	stringify: (item) ->
+	stringify: (command) ->
 		string = ''
-		if item.user_id?
-			string += "[#{item.user_id.cyan}] "
-		string += "#{item.command.white}"
-		for key, value of item
-			if key isnt 'command'
-				string += " #{key}:".yellow + "#{value}"
+		if command.user_id?
+			string += "[#{command.user_id.cyan}] "
+		string += "#{command.name.white}"
+		unless command.silent
+			for key, value of command.data
+				string += " #{key}:".yellow + "#{JSON.stringify value}"
 		string
 
 	run: (scenario) ->
@@ -42,11 +42,11 @@ Gunslinger =
 			commands = scenario.queue or scenario
 			next = (index) =>
 				if index < commands.length
-					item = commands[index++]
-					console.log @stringify item
+					command = commands[index++]
+					console.log @stringify command
 
 					co(=>
-						@[item.command] item, item.user_id
+						@[command.name] command.data, command.user_id
 					)
 						.catch (err) -> console.log err
 					 	.then        -> next index
@@ -56,12 +56,12 @@ Gunslinger =
 
 	run_async: (scenario) ->
 		co(=>
-			yield scenario.queue.map (item) =>
+			yield scenario.queue.map (command) =>
 				co(=>
-					console.log "#{@stringify item} start"
-					@[item.command] item, item.user_id
+					console.log "#{@stringify command} start"
+					@[command.name] command.data, command.user_id
 				)
-					.then => console.log "#{@stringify item} done"
+					.then => console.log "#{@stringify command} done"
 					.catch (err) -> console.log err
 		)
 		.catch (err) -> console.log err
@@ -176,6 +176,9 @@ Gunslinger =
 			@service_process.on 'exit', (code) ->
 				process.stdout.write "[#{'cssqd-service'.magenta}] service process exited with code #{code}"
 
+			process.on 'exit', =>
+				do @service_process.kill
+
 	kill_service: ->
 		do @service_process.kill
 
@@ -184,36 +187,55 @@ Gunslinger =
 		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
 		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
 
-	exchange: ({send, assert}, user_id) ->
-		nightmare = @nightmares[user_id]
+	exchange: ({action, capture}, user_id) ->
 
-		yield nightmare.evaluate \
-			((ids) -> window.WarpExchange.capture ids),
-			Object.keys assert
-
-		{cell, value} = send
-
+		received = null
 		time = do process.hrtime
 
-		yield @send send, user_id
-		yield nightmare.wait \
-			-> window.WarpExchange.done
+		user_ids = Object.keys capture
+
+		capture_ids = yield for uid in user_ids
+			nightmare = @nightmares[uid]
+			assertions = capture[uid]
+			nightmare.evaluate \
+				((cells) -> window.WarpExchange.capture cells),
+				Object.keys assertions
+
+		if action?
+			yield @as
+				user_id: user_id
+				callback: action
+
+		yield capture_ids.map (capture_id) ->
+			nightmare.wait \
+				((cid) -> window.WarpExchange.captures[cid].done),
+				capture_id
+
+		values = yield capture_ids.map (capture_id) ->
+			nightmare.evaluate \
+				((cid) -> window.WarpExchange.captures[cid].values),
+				capture_id
 
 		time = process.hrtime time
 		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
 
-		received = yield nightmare.evaluate \
-			-> window.WarpExchange.received
+		for uid, index in user_ids
+			assertions = capture[uid]
+			for cell, assertion of assertions
+				result = if typeof assertion is 'function'
+					assertion values[index][cell]
+				else
+					assertion is values[index][cell]
 
-		for cell, assertion of assert
-			result = assertion received[cell]
-			if result
-				console.log "[#{user_id.cyan}] passed ✓".green
-			else
-				console.log "[#{user_id.cyan}] failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
+				if result
+					console.log "[#{user_id.cyan}]" + ' passed ✓'.green
+				else
+					console.log "[#{user_id.cyan}]" + " failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
 
-		yield nightmare.evaluate \
-			-> do window.WarpExchange.reset
+		yield capture_ids.map (capture_id) ->
+			nightmare.evaluate \
+				((cid) -> window.WarpExchange.release cid),
+				capture_id
 
 	refresh: (_, user_id) ->
 		nightmare = @nightmares[user_id]
