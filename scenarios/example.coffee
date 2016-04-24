@@ -42,8 +42,9 @@ scenario
 			@exchange
 				capture:
 					'fake-game-master':
-						players: ({ data: {items} }) -> items.length is 1
-						# check player id
+						players: ({ data: { items: [player] } }) ->
+							player.display_name is "fake-player-#{index}"
+
 				action: ->
 					@spawn \
 						"fake-player-#{index}",
@@ -61,7 +62,17 @@ scenario
 				@wait_cell 'round_phase', RoundPhase.IN_PROGRESS
 				@repeat 10, -> [
 					@wait Gunslinger.any_in_range [50, 75]
-					do @refresh
+
+					@exchange
+						capture:
+							'fake-game-master':
+								players:
+									({ method, data: { indexes: [index] } }) ->
+										method is 'remove'
+
+						action: ->
+							do @refresh
+
 					@exchange
 						capture:
 							"fake-player-#{index}":

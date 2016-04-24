@@ -220,6 +220,7 @@ Gunslinger =
 		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
 
 		for uid, index in user_ids
+			# yield nightmare.screenshot "#{__dirname}/#{uid}-#{do Date.now}.png"
 			assertions = capture[uid]
 			for cell, assertion of assertions
 				result = if typeof assertion is 'function'
