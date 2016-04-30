@@ -14,6 +14,6 @@
     "cson": "^3.0.2",
     "minimist": "^1.2.0",
     "mongoose": "^4.2.10",
-    "nightmare": "https://github.com/segmentio/nightmare.git"
+    "sweetdream": "R1ZZU/sweetdream"
   }
 }
