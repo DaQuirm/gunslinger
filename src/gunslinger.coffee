@@ -1,8 +1,8 @@
-Nightmare = require 'nightmare'
-co        = require 'co'
-{spawn}   = require 'child_process'
-colors    = require 'colors'
-path      = require 'path'
+Sweetdream  = require 'sweetdream'
+co          = require 'co'
+{spawn}     = require 'child_process'
+colors      = require 'colors'
+path        = require 'path'
 
 Scenario    = require './scenario'
 User        = require '../models/user'
@@ -11,7 +11,7 @@ Puzzle      = (require '../models/puzzle').PuzzleModel
 
 Gunslinger =
 
-	nightmares: {}
+	sweetdreams: {}
 
 	fake_accounts: {}
 	game_sessions: {}
@@ -67,8 +67,8 @@ Gunslinger =
 		.catch (err) -> console.log err
 
 	spawn: ({user_id, game_session_id}) ->
-		nightmare = do Nightmare
-		@nightmares[user_id] = nightmare
+		sweetdream = Sweetdream.create();
+		@sweetdreams[user_id] = sweetdream
 
 		session_data =
 			passport:
@@ -81,16 +81,16 @@ Gunslinger =
 		app_url = "#{base_url}/game?id=#{game_session_oid}&user_id=gunslinger#{user_id}"
 
 		console.log 'spawn: setting auth cookie to deceive Warp'
-		yield nightmare.cookies.set
+		yield sweetdream.setCookies
 			name: 'koa:sess'
 			value: cookie
 			url:   base_url
 
 		console.log "spawn: opening #{app_url}"
-		yield nightmare.goto app_url
+		yield sweetdream.goto app_url
 
 		console.log 'spawn: injecting WarpExchange'
-		yield nightmare.inject 'js', "#{__dirname}/exchange.js"
+		yield sweetdream.inject 'js', "#{__dirname}/exchange.js"
 
 	as: ({user_id, callback}) ->
 		scenario = new Scenario
@@ -105,8 +105,8 @@ Gunslinger =
 		yield @run_async scenario
 
 	wait_cell: ({cell, value}, user_id) ->
-		nightmare = @nightmares[user_id]
-		yield nightmare.wait \
+		sweetdream = @sweetdreams[user_id]
+		yield sweetdream.wait \
 			((cell, value) -> window.app[cell].value is value),
 			cell, value
 
@@ -117,14 +117,14 @@ Gunslinger =
 			), interval
 
 	send: ({cell, value}, user_id) ->
-		nightmare = @nightmares[user_id]
-		yield nightmare.evaluate \
+		sweetdream = @sweetdreams[user_id]
+		yield sweetdream.evaluate \
 			((cell, value) -> window.app[cell].value = value),
 			cell, value
 
 	end: ({id}) ->
-		nightmare = @nightmares[id]
-		yield do nightmare.end
+		sweetdream = @sweetdreams[id]
+		yield do sweetdream.end
 
 	db_cleanup: ({collections}) ->
 		Collection =
@@ -183,8 +183,8 @@ Gunslinger =
 		do @service_process.kill
 
 	check_cells: ({cell, assert}, user_id) ->
-		nightmare = @nightmares[user_id]
-		assertion = assert yield nightmare.evaluate ((cell) -> window.app[cell].value), cell
+		sweetdream = @sweetdreams[user_id]
+		assertion = assert yield sweetdream.evaluate ((cell) -> window.app[cell].value), cell
 		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
 
 	exchange: ({action, capture}, user_id) ->
@@ -195,10 +195,12 @@ Gunslinger =
 		user_ids = Object.keys capture
 
 		capture_ids = yield for uid in user_ids
-			nightmare = @nightmares[uid]
+			sweetdream = @sweetdreams[uid]
 			assertions = capture[uid]
-			nightmare.evaluate \
-				((cells) -> window.WarpExchange.capture cells),
+			sweetdream.evaluate \
+				((cells) ->
+					console.log window.WarpExchange
+					window.WarpExchange.capture cells),
 				Object.keys assertions
 
 		if action?
@@ -207,12 +209,12 @@ Gunslinger =
 				callback: action
 
 		yield capture_ids.map (capture_id) ->
-			nightmare.wait \
+			sweetdream.wait \
 				((cid) -> window.WarpExchange.captures[cid].done),
 				capture_id
 
 		values = yield capture_ids.map (capture_id) ->
-			nightmare.evaluate \
+			sweetdream.evaluate \
 				((cid) -> window.WarpExchange.captures[cid].values),
 				capture_id
 
@@ -220,7 +222,7 @@ Gunslinger =
 		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
 
 		for uid, index in user_ids
-			# yield nightmare.screenshot "#{__dirname}/#{uid}-#{do Date.now}.png"
+			# yield sweetdream.screenshot "#{__dirname}/#{uid}-#{do Date.now}.png"
 			assertions = capture[uid]
 			for cell, assertion of assertions
 				result = if typeof assertion is 'function'
@@ -234,13 +236,13 @@ Gunslinger =
 					console.log "[#{user_id.cyan}]" + " failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
 
 		yield capture_ids.map (capture_id) ->
-			nightmare.evaluate \
+			sweetdream.evaluate \
 				((cid) -> window.WarpExchange.release cid),
 				capture_id
 
 	refresh: (_, user_id) ->
-		nightmare = @nightmares[user_id]
-		yield do nightmare.refresh
+		sweetdream = @sweetdreams[user_id]
+		yield do sweetdream.refresh
 
 		session_data =
 			passport:
@@ -250,11 +252,11 @@ Gunslinger =
 
 
 		base_url = 'http://localhost:3000'
-		yield nightmare.cookies.set
+		yield sweetdream.setCookies
 			name: 'koa:sess'
 			value: cookie
 			url:   base_url
 
-		yield nightmare.inject 'js', "#{__dirname}/exchange.js"
+		yield sweetdream.inject 'js', "#{__dirname}/exchange.js"
 
 module.exports = Gunslinger
