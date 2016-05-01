@@ -67,7 +67,15 @@ Gunslinger =
 		.catch (err) -> console.log err
 
 	spawn: ({user_id, game_session_id}) ->
-		sweetdream = Sweetdream.create();
+		should_show_browser_window = no
+
+		# uncomment next line to see game master window
+		# should_show_browser_window = user_id is 'fake-game-master'
+
+		sweetdream = yield Sweetdream.create
+			browserWindow:
+				show: should_show_browser_window
+
 		@sweetdreams[user_id] = sweetdream
 
 		session_data =
