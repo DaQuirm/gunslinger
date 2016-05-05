@@ -247,7 +247,6 @@ Gunslinger =
 
 			assertions = capture[uid]
 			for cell, assertion of assertions
-				console.log values, index, cell
 				result = if typeof assertion is 'function'
 					assertion values[index][cell]
 				else
