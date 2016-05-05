@@ -63,15 +63,7 @@ scenario
 				@repeat 10, -> [
 					@wait Gunslinger.any_in_range [50, 75]
 
-					@exchange
-						capture:
-							'fake-game-master':
-								players:
-									({ method, data: { indexes: [index] } }) ->
-										method is 'remove'
-
-						action: ->
-							do @refresh
+					do @refresh
 
 					@exchange
 						capture:

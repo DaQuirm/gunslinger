@@ -1,6 +1,7 @@
 Sweetdream  = require 'sweetdream'
 co          = require 'co'
 {spawn}     = require 'child_process'
+jsonfile  = require 'jsonfile'
 colors      = require 'colors'
 path        = require 'path'
 
@@ -12,6 +13,7 @@ Puzzle      = (require '../models/puzzle').PuzzleModel
 Gunslinger =
 
 	sweetdreams: {}
+	warp_feeds: {}
 
 	fake_accounts: {}
 	game_sessions: {}
@@ -184,8 +186,18 @@ Gunslinger =
 			@service_process.on 'exit', (code) ->
 				process.stdout.write "[#{'cssqd-service'.magenta}] service process exited with code #{code}"
 
-			process.on 'exit', =>
-				do @service_process.kill
+			exit_handler = =>
+				console.log 'process exit'
+				for uid, feed of @warp_feeds
+					json = feed
+					.filter (item) -> item?
+					.map ({entities}) -> entities
+
+					jsonfile.writeFileSync "warp-feeds/wf-#{uid}.json", json, spaces:2
+					do @service_process.kill
+
+			process.on 'exit', exit_handler
+			process.on 'SIGINT', exit_handler
 
 	kill_service: ->
 		do @service_process.kill
@@ -207,7 +219,6 @@ Gunslinger =
 			assertions = capture[uid]
 			sweetdream.evaluate \
 				((cells) ->
-					console.log window.WarpExchange
 					window.WarpExchange.capture cells),
 				Object.keys assertions
 
@@ -230,9 +241,13 @@ Gunslinger =
 		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
 
 		for uid, index in user_ids
-			# yield sweetdream.screenshot "#{__dirname}/#{uid}-#{do Date.now}.png"
+			sweetdream = @sweetdreams[uid]
+			@warp_feeds[uid] = yield sweetdream.evaluate ->
+				window.WarpExchange.feed
+
 			assertions = capture[uid]
 			for cell, assertion of assertions
+				console.log values, index, cell
 				result = if typeof assertion is 'function'
 					assertion values[index][cell]
 				else
@@ -243,6 +258,7 @@ Gunslinger =
 				else
 					console.log "[#{user_id.cyan}]" + " failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
 
+		sweetdream = @sweetdreams[user_id]
 		yield capture_ids.map (capture_id) ->
 			sweetdream.evaluate \
 				((cid) -> window.WarpExchange.release cid),

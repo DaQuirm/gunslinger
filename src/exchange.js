@@ -1,9 +1,10 @@
-var entities, entity, id, _fn,
+var entities, entity, id, original_sync, warp_client, _fn,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 window.WarpExchange = {
   capture_id: 0,
   captures: {},
+  feed: [],
   capture: function(ids) {
     this.captures[this.capture_id] = {
       ids: ids,
@@ -17,7 +18,9 @@ window.WarpExchange = {
   }
 };
 
-entities = window.app.warp_client.entities;
+warp_client = window.app.warp_client;
+
+entities = warp_client.entities;
 
 _fn = (function(_this) {
   return function(id) {
@@ -48,3 +51,10 @@ for (id in entities) {
   entity = entities[id];
   _fn(id);
 }
+
+original_sync = warp_client.transport.sync;
+
+warp_client.transport.sync = function(message) {
+  window.WarpExchange.feed.push(message);
+  return original_sync.call(warp_client.transport, message);
+};

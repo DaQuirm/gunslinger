@@ -13,7 +13,6 @@ connection.once 'open', ->
 		.then ->
 			console.log 'all done!'
 			do process.exit
-			do done
 
 	# .nightmare, ->
 	# .refresh

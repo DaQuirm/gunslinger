@@ -12,6 +12,7 @@
     "co": "^4.6.0",
     "colors": "^1.1.2",
     "cson": "^3.0.2",
+    "jsonfile": "^2.3.0",
     "minimist": "^1.2.0",
     "mongoose": "^4.2.10",
     "sweetdream": "R1ZZU/sweetdream#b4b9bd986cd2e9fc4d073d6437f7a320a66241b2"
