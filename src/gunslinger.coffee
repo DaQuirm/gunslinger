@@ -1,9 +1,9 @@
-Sweetdream  = require 'sweetdream'
-co          = require 'co'
-{spawn}     = require 'child_process'
-jsonfile  = require 'jsonfile'
-colors      = require 'colors'
-path        = require 'path'
+Sweetdream = require 'sweetdream'
+co         = require 'co'
+{spawn}    = require 'child_process'
+colors     = require 'colors'
+path       = require 'path'
+fs         = require 'fs'
 
 Scenario    = require './scenario'
 User        = require '../models/user'
@@ -193,7 +193,9 @@ Gunslinger =
 					.filter (item) -> item?
 					.map ({entities}) -> entities
 
-					jsonfile.writeFileSync "warp-feeds/wf-#{uid}.json", json, spaces:2
+					unless fs.existsSync 'warp-feeds'
+						fs.mkdirSync 'warp-feeds'
+					fs.writeFileSync "warp-feeds/wf-#{uid}.json", JSON.stringify(json, null, 2)
 					do @service_process.kill
 
 			process.on 'exit', exit_handler
