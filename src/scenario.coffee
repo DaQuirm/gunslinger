@@ -64,4 +64,7 @@ class Scenario
 	refresh: ->
 		@method 'refresh', {}
 
+	call: (method, args...) ->
+		method.apply @, args
+
 module.exports = Scenario
