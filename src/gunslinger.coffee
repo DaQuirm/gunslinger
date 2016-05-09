@@ -179,10 +179,19 @@ Gunslinger =
 
 	service: ->
 		yield new Promise (resolve) =>
-			cwd = @configuration.service_path
+			cwd = path.resolve @configuration.service_path
 			console.log "starting cssqd service from #{cwd}"
 
-			@service_process = spawn 'npm', ['run', 'dev-test'], cwd: cwd
+			@service_process = spawn \
+				'coffee',
+				['index.coffee'],
+
+				cwd: cwd
+				env: Object.assign process.env,
+					NODE_ENV: 'test'
+					NODE_PATH: './app'
+
+			@service_process.stderr.pipe fs.createWriteStream (path.join cwd, 'cssqderr.log'), flags:'a'
 
 			@service_process.stdout.on 'data', (data) ->
 				process.stdout.write "[#{'cssqd-service'.magenta}]#{data}"
@@ -205,13 +214,14 @@ Gunslinger =
 					unless fs.existsSync 'warp-feeds'
 						fs.mkdirSync 'warp-feeds'
 					fs.writeFileSync "warp-feeds/wf-#{uid}.json", JSON.stringify(json, null, 2)
-					do @service_process.kill
+					@service_process.kill 'SIGINT'
+					do process.exit
 
 			process.on 'exit', exit_handler
 			process.on 'SIGINT', exit_handler
 
 	kill_service: ->
-		do @service_process.kill
+		@service_process.kill 'SIGINT'
 
 	check_cells: ({cell, assert}, user_id) ->
 		sweetdream = @sweetdreams[user_id]
