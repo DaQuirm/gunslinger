@@ -39,18 +39,26 @@ Gunslinger =
 				string += " #{key}:".yellow + "#{JSON.stringify value}"
 		string
 
+	update_warp_feeds: (user_id) ->
+		sweetdream = @sweetdreams[user_id]
+		warp_feed = yield sweetdream.evaluate ->
+			window.WarpExchange.feed
+		@warp_feeds[user_id] or= []
+		@warp_feeds[user_id] = @warp_feeds[user_id].concat warp_feed
+
 	run: (scenario) ->
 		new Promise (resolve) =>
 			commands = scenario.queue or scenario
 			next = (index) =>
 				if index < commands.length
 					command = commands[index++]
-					console.log @stringify command
+					command_string = @stringify command
+					console.log command_string
 
 					co(=>
 						@[command.name] command.data, command.user_id
 					)
-						.catch (err) -> console.log err
+						.catch (err) -> console.log command_string, err
 					 	.then        -> next index
 				else
 					do resolve
@@ -134,6 +142,7 @@ Gunslinger =
 
 	end: ({id}) ->
 		sweetdream = @sweetdreams[id]
+		yield @update_warp_feeds id
 		yield do sweetdream.end
 
 	db_cleanup: ({collections}) ->
@@ -243,10 +252,6 @@ Gunslinger =
 		console.log "[#{user_id.cyan}] exchange: time #{time[0]*1000000+time[1]/1000}μs"
 
 		for uid, index in user_ids
-			sweetdream = @sweetdreams[uid]
-			@warp_feeds[uid] = yield sweetdream.evaluate ->
-				window.WarpExchange.feed
-
 			assertions = capture[uid]
 			for cell, assertion of assertions
 				result = if typeof assertion is 'function'
@@ -267,6 +272,7 @@ Gunslinger =
 
 	refresh: (_, user_id) ->
 		sweetdream = @sweetdreams[user_id]
+		yield @update_warp_feeds user_id
 		yield do sweetdream.refresh
 
 		session_data =
