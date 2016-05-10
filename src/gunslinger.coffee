@@ -208,14 +208,15 @@ Gunslinger =
 				console.log 'process exit'
 				for uid, feed of @warp_feeds
 					json = feed
-					.filter (item) -> item?
-					.map ({entities}) -> entities
+						.filter (item) -> item?
+						.map ({entities}) -> entities
 
 					unless fs.existsSync 'warp-feeds'
 						fs.mkdirSync 'warp-feeds'
 					fs.writeFileSync "warp-feeds/wf-#{uid}.json", JSON.stringify(json, null, 2)
-					@service_process.kill 'SIGINT'
-					do process.exit
+
+				@service_process.kill 'SIGINT'
+				do process.exit
 
 			process.on 'exit', exit_handler
 			process.on 'SIGINT', exit_handler
