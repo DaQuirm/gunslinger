@@ -13,6 +13,7 @@
 		selector: 'article'
 		name: 'Matching Game II'
 		banned: []
+		incorrect_selectors: ['d', 'div', 'ul > li', 'header, footer']
 	}
 
 	{
@@ -27,6 +28,7 @@
 		selector: '[id*=d6d]'
 		name: 'Shortcut'
 		banned: [':', '^', '"', '\'']
+		incorrect_selectors: ['p', 'div', ':first-child', '[id]']
 	}
 
 	{
@@ -44,6 +46,7 @@
 		selector: ':checked'
 		name: 'Signing up'
 		banned: ['n', '[']
+		incorrect_selectors: ['input', 'div', 'main > *', '[type]']
 	}
 
 	{
@@ -63,6 +66,7 @@
 		selector: 'section :only-of-type'
 		name: 'Ugly duckling'
 		banned: ['a', '=']
+		incorrect_selectors: ['p', 'aside', ':nth-child(2n+3)', '*']
 	}
 
 	{
@@ -78,6 +82,7 @@
 		selector: ':not(:first-child)'
 		name: 'Envious heirs'
 		banned: [',']
+		incorrect_selectors: ['_', '[id]', 'span', 'div']
 	}
 
 	{
@@ -97,6 +102,7 @@
 		selector: 'p:lang(fr)'
 		name: 'Je t\'aime, CSS <3'
 		banned: ['=']
+		incorrect_selectors: ['article + article', 'p', '[data-title]', 'EPIPE']
 	}
 
 	{
@@ -117,6 +123,7 @@
 		selector: '.even ~ .even'
 		name: 'Getting even'
 		banned: [':']
+		incorrect_selectors: ['d', 'div', '.even', '']
 	}
 
 	{
@@ -137,6 +144,7 @@
 		selector: ':nth-child(-2n+4)'
 		name: 'A good start'
 		banned: []
+		incorrect_selectors: ['d', 'li', ':nth-child(-2n+3)', '.epipe']
 	}
 
 	{
@@ -165,6 +173,7 @@
 		selector: 'div:only-child'
 		name: 'Loner'
 		banned: ['t']
+		incorrect_selectors: ['div div', 'div', 'ul > li', ':empty']
 	}
 
 
@@ -181,6 +190,7 @@
 		selector: '[data-attr~=s]'
 		name: 'Cosmopolitan'
 		banned: [':', '+', ',']
+		incorrect_selectors: ['d', '[data-attr]', 'div ~ span', '*']
 	}
 
 	{
@@ -196,6 +206,7 @@
 		selector: '.match'
 		name: 'Matching Game'
 		banned: []
+		incorrect_selectors: ['d', 'footer div', 'ul > li', 'header, footer']
 	}
 
 	{
@@ -210,6 +221,7 @@
 		selector: 'div#me'
 		name: 'Bits and pieces'
 		banned: [':', '~', '+']
+		incorrect_selectors: ['span + div', '#me', 'span div', 'nth:child(2)']
 	}
 
 	{
@@ -227,6 +239,7 @@
 		selector: '*'
 		name: 'Split'
 		banned: [',']
+		incorrect_selectors: ['nav', 'div', 'article + aside', 'header, footer']
 	}
 
 	{
@@ -246,6 +259,7 @@
 		selector: '[data-anchor] + div'
 		name: 'Anchor'
 		banned: [':']
+		incorrect_selectors: ['d', 'div', '.epipe', 'div + div']
 	}
 
 	{
@@ -273,6 +287,7 @@
 		selector: ':empty'
 		name: 'Mariana'
 		banned: []
+		incorrect_selectors: ['* * *', 'div', 'div div', 'header, footer']
 	}
 
 	{
@@ -292,5 +307,6 @@
 		selector: '.cellar.door'
 		name: 'Classy'
 		banned: []
+		incorrect_selectors: ['[class]', '.glass.cellar.door', 'div div', 'EPIPE']
 	}
 ]

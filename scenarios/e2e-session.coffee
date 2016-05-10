@@ -5,16 +5,10 @@ Gunslinger = require '../src/gunslinger'
 GameSessionCommand = require '../models/game-session-command'
 RoundPhase = require '../models/round-phase'
 
-incorrect_selectors = [
-	'd'
-	'*'
-	'#woo'
-	'header, footer'
-]
-
 puzzles = CSON.load "#{__dirname}/../fixtures/puzzles.cson"
 
 correct_selectors = puzzles.map (puzzle) -> puzzle.selector
+incorrect_selectors = puzzles.map (puzzle) -> puzzle.incorrect_selectors
 
 scenario = new Scenario
 
