@@ -4,11 +4,14 @@ window.WarpExchange =
 
 	feed: []
 
-	capture: (ids) ->
+	capture: (ids, cells = {}) ->
 		@captures[@capture_id] =
 			ids:  ids
 			done: no
 			values: {}
+
+		for cell, value of cells
+			window.app[cell].value = value
 
 		@capture_id++
 

@@ -229,7 +229,7 @@ Gunslinger =
 		assertion = assert yield sweetdream.evaluate ((cell) -> window.app[cell].value), cell
 		if assertion then console.log 'passed ✓'.green else console.log 'failed ✗'.red
 
-	exchange: ({action, capture}, user_id) ->
+	exchange: ({action, capture, send}, user_id) ->
 
 		received = null
 		time = do process.hrtime
@@ -241,9 +241,9 @@ Gunslinger =
 			assertions = capture[uid]
 
 			capture_id: sweetdream.evaluate \
-				((cells) ->
-					window.WarpExchange.capture cells),
-				Object.keys assertions
+				((ids, send) ->
+					window.WarpExchange.capture ids, send),
+				Object.keys(assertions), send
 			uid: uid
 
 		if action?

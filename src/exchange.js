@@ -5,12 +5,20 @@ window.WarpExchange = {
   capture_id: 0,
   captures: {},
   feed: [],
-  capture: function(ids) {
+  capture: function(ids, cells) {
+    var cell, value;
+    if (cells == null) {
+      cells = {};
+    }
     this.captures[this.capture_id] = {
       ids: ids,
       done: false,
       values: {}
     };
+    for (cell in cells) {
+      value = cells[cell];
+      window.app[cell].value = value;
+    }
     return this.capture_id++;
   },
   release: function(cid) {

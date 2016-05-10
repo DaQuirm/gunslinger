@@ -38,8 +38,8 @@ play_round = (puzzle_index) ->
 						capture:
 							"fake-player-#{index}":
 								match: ({ result }) -> result is 'negative'
-						action: ->
-							@send 'selector', Gunslinger.any_of incorrect_selectors
+						send:
+							selector: Gunslinger.any_of incorrect_selectors[puzzle_index]
 				]
 				@wait Gunslinger.any_in_range [10, 50]
 
@@ -47,8 +47,8 @@ play_round = (puzzle_index) ->
 					capture:
 						"fake-player-#{index}":
 							match: ({ result }) -> result is 'positive'
-					action: ->
-						@send 'selector', correct_selectors[puzzle_index]
+					send:
+						selector: correct_selectors[puzzle_index]
 
 	.as 'fake-game-master', ->
 		@send 'command',
