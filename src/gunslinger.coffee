@@ -236,26 +236,28 @@ Gunslinger =
 
 		user_ids = Object.keys capture
 
-		capture_ids = yield for uid in user_ids
+		captures = yield for uid in user_ids
 			sweetdream = @sweetdreams[uid]
 			assertions = capture[uid]
-			sweetdream.evaluate \
+
+			capture_id: sweetdream.evaluate \
 				((cells) ->
 					window.WarpExchange.capture cells),
 				Object.keys assertions
+			uid: uid
 
 		if action?
 			yield @as
 				user_id: user_id
 				callback: action
 
-		yield capture_ids.map (capture_id) ->
-			sweetdream.wait \
+		yield captures.map ({capture_id, uid}) =>
+			@sweetdreams[uid].wait \
 				((cid) -> window.WarpExchange.captures[cid].done),
 				capture_id
 
-		values = yield capture_ids.map (capture_id) ->
-			sweetdream.evaluate \
+		values = yield captures.map ({capture_id, uid}) =>
+			@sweetdreams[uid].evaluate \
 				((cid) -> window.WarpExchange.captures[cid].values),
 				capture_id
 
@@ -275,9 +277,8 @@ Gunslinger =
 				else
 					console.log "[#{user_id.cyan}]" + " failed ✗: expected cell `#{cell}` to pass assertion #{assertion}".red
 
-		sweetdream = @sweetdreams[user_id]
-		yield capture_ids.map (capture_id) ->
-			sweetdream.evaluate \
+		yield captures.map ({capture_id, uid}) =>
+			@sweetdreams[uid].evaluate \
 				((cid) -> window.WarpExchange.release cid),
 				capture_id
 
